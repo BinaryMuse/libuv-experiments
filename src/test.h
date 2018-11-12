@@ -1,0 +1,1 @@
+#define THING "THIS IS ANOTHER THING"
