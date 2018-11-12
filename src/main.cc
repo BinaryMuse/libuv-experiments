@@ -2,14 +2,25 @@
 #include <stdlib.h>
 #include <uv.h>
 
+int64_t counter = 0;
+
+void wait_for_a_spell(uv_idle_t* handle) {
+  counter++;
+
+  if (counter >= 10e6) {
+    uv_idle_stop(handle);
+  }
+}
+
 int main() {
-  uv_loop_t* loop = new uv_loop_t;
-  uv_loop_init(loop);
+  uv_idle_t idler;
 
-  std::cout << "Shutting down..." << std::endl;
-  uv_run(loop, UV_RUN_DEFAULT);
+  uv_idle_init(uv_default_loop(), &idler);
+  uv_idle_start(&idler, wait_for_a_spell);
 
-  uv_loop_close(loop);
-  delete loop;
+  std::cout << "Idling..." << std::endl;
+  uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+
+  uv_loop_close(uv_default_loop());
   return 0;
 }
