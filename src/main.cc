@@ -1,26 +1,52 @@
 #include <iostream>
-#include <stdlib.h>
 #include <uv.h>
+#include "world.h"
 
-int64_t counter = 0;
+int DEFAULT_PORT = 3333;
+uv_loop_t* loop;
+struct sockaddr_in addr;
+World* world;
 
-void wait_for_a_spell(uv_idle_t* handle) {
-  counter++;
+void on_new_connection(uv_stream_t* server, int status) {
+  if (status < 0) {
+    std::cerr << "New connection error: " << uv_strerror(status) << std::endl;
+    return;
+  }
 
-  if (counter >= 10e6) {
-    uv_idle_stop(handle);
+  uv_tcp_t* client = new uv_tcp_t;
+  uv_tcp_init(loop, client);
+  if (uv_accept(server, (uv_stream_t*) client) == 0) {
+    world->AcceptConnection(client);
+  } else {
+    uv_close((uv_handle_t*)client, NULL);
   }
 }
 
 int main() {
-  uv_idle_t idler;
+  loop = uv_default_loop();
+  world = new World(loop);
 
-  uv_idle_init(uv_default_loop(), &idler);
-  uv_idle_start(&idler, wait_for_a_spell);
+  uv_tcp_t server;
+  uv_tcp_init(loop, &server);
 
-  std::cout << "Idling..." << std::endl;
-  uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+  uv_ip4_addr("0.0.0.0", DEFAULT_PORT, &addr);
 
-  uv_loop_close(uv_default_loop());
-  return 0;
+  uv_tcp_bind(&server, (const sockaddr*)&addr, 0);
+  int r = uv_listen((uv_stream_t*)&server, 128, on_new_connection);
+  if (r) {
+    std::cerr << "Listen error " << r << std::endl;
+    return 1;
+  }
+
+  return uv_run(loop, UV_RUN_DEFAULT);
+  // uv_idle_t idler;
+
+  // uv_idle_init(uv_default_loop(), &idler);
+  // uv_idle_start(&idler, wait_for_a_spell);
+
+  // std::cout << "Idling..." << std::endl;
+  // uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+
+  // uv_loop_close(uv_default_loop());
+  // return 0;
 }
