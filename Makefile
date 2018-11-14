@@ -9,8 +9,8 @@ SRCEXT    := cc
 DEPEXT    := d
 OBJEXT    := o
 
-CFLAGS = -g -Wall -Wextra `pkg-config --cflags libuv`
-LDFLAGS = `pkg-config --libs libuv`
+CFLAGS    := -g -Wall -Wextra -stdlib=libc++ -std=c++11 `pkg-config --cflags libuv`
+LDFLAGS   := `pkg-config --libs libuv`
 
 ###
 
