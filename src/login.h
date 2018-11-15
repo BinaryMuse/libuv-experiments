@@ -6,7 +6,7 @@
 
 class Login final : public Connection {
   public:
-    Login(World* world, uv_stream_t* conn);
+    Login(World& world, uv_stream_t* conn);
     void HandleInput(const std::string& input) override;
     ConnectionType GetConnectionType() override { return ConnectionType::LOGIN; };
 };

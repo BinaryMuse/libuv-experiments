@@ -5,11 +5,17 @@
 #include "world.h"
 #include "utils.h"
 
-Player::Player(World* world, uv_stream_t* conn, const std::string& name) :
+Player::Player(World& world, uv_stream_t* conn, const std::string& name) :
   Connection(world, conn), name_(name) {}
 
 void Player::HandleInput(const std::string& input) {
-  std::cout << "Handling input: " << input << std::endl;
+  if (input == "quit") {
+    this->Send("Goodbye!\n");
+    world_->Logout(*this);
+  } else {
+    this->Send(tprintf("Sorry, I didn't understand: %s\n", input));
+    std::cout << "Unknown input: " << input << std::endl;
+  }
 }
 
 // void Player::HandleInput([[maybe_unused]] uv_stream_t* client, [[maybe_unused]] ssize_t nread, const uv_buf_t* buf) {

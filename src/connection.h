@@ -17,8 +17,9 @@ class Connection {
     virtual ConnectionType GetConnectionType() = 0;
 
   protected:
-    Connection(World* world, uv_stream_t* conn) :
-      world_(world), conn_(conn) {};
+    Connection(World& world, uv_stream_t* conn) :
+      world_(&world), conn_(conn) {};
+
     World* world_;
     uv_stream_t* conn_;
 };
