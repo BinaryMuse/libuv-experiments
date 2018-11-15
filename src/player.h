@@ -1,10 +1,9 @@
-#ifndef FILE_PLAYER_H__
-#define FILE_PLAYER_H__
+#pragma once
 
 #include <uv.h>
 #include "world.h"
 
-enum PlayerState {
+enum class PlayerState {
   AWAITING_LOGIN,
   CONTROLLING_NAME
 };
@@ -23,5 +22,3 @@ class Player {
     std::string name_;
     World* world_;
 };
-
-#endif /* !FILE_PLAYER_H__ */
