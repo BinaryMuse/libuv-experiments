@@ -1,24 +1,17 @@
 #pragma once
 
 #include <uv.h>
+#include "connection.h"
 #include "world.h"
 
-enum class PlayerState {
-  AWAITING_LOGIN,
-  CONTROLLING_NAME
-};
-
-class Player {
+class Player final : public Connection {
   public:
-    Player(World* world);
-    void HandleInput(uv_stream_t* client, ssize_t nread, const uv_buf_t* buf);
-
-    void Send(std::string message);
+    Player(World* world, uv_stream_t* conn, const std::string& name);
+    void HandleInput(const std::string& input) override;
+    ConnectionType GetConnectionType() override { return ConnectionType::PLAYING; };
 
     const std::string& GetName() { return name_; }
 
   private:
-    PlayerState state_;
     std::string name_;
-    World* world_;
 };

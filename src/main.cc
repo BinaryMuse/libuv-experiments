@@ -9,7 +9,7 @@ World* world;
 
 int main() {
   loop = uv_default_loop();
-  world = new World(loop);
+  world = new World();
 
   uv_tcp_t server;
   uv_tcp_init(loop, &server);

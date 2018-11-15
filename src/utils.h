@@ -9,6 +9,8 @@ uv_buf_t str_to_buf(std::string str);
 std::string& rtrim(std::string& str, const std::string& chars = "\t\n\v\f\r ");
 
 template <typename F, typename... Args>
-inline std::string tprintf(const F& format, Args&&... args);
-
-#include "tprintf.hpp"
+std::string tprintf(const F& format, Args&&... args) {
+  boost::format fmt(format);
+  (fmt % ... % std::forward<Args>(args));
+  return fmt.str();
+}
