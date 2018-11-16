@@ -12,24 +12,16 @@ void Player::HandleInput(const std::string& input) {
   if (input == "quit") {
     this->Send("Goodbye!\n");
     world_->Logout(*this);
+  } else if (input == "look") {
+    auto room = world_->GetRoom(this->current_room_);
+    if (!room) {
+      this->Send("Uh oh, you can't tell where you are!\n");
+      std::cerr << "FATAL ERROR: player looking in non-existing room " << this->current_room_ << std::endl;
+      return;
+    }
+    this->Send(tprintf("%s\n", room->GetDescription()));
   } else {
     this->Send(tprintf("Sorry, I didn't understand: %s\n", input));
     std::cout << "Unknown input: " << input << std::endl;
   }
 }
-
-// void Player::HandleInput([[maybe_unused]] uv_stream_t* client, [[maybe_unused]] ssize_t nread, const uv_buf_t* buf) {
-//   if (state_ == PlayerState::AWAITING_LOGIN) {
-//     std::string name(buf->base);
-//     name_ = rtrim(name);
-//     std::cout << "Got new char: " << name_ << std::endl;
-//     state_ = PlayerState::CONTROLLING_NAME;
-//     this->Send(tprintf("Welcome to the game, %s!\n", name_));
-//     world_->SendExcept(this, tprintf("%s has joined the game!\n", name_));
-//   } else {
-//     std::string input(buf->base);
-//     std::string message = rtrim(input);
-//     this->Send(tprintf("You say: %s\n", message));
-//     world_->SendExcept(this, tprintf("%s says: %s\n", name_, message));
-//   }
-// }
