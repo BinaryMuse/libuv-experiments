@@ -11,14 +11,14 @@
 
 World::World() {
   {
-    std::shared_ptr<Room> room(new Room(1));
+    std::shared_ptr<Room> room(new Room(*this, 1));
     room->SetDescription("A Plain Room\n\nThis is a plain room. There's not much here. There is a foyer to the east.");
     rooms_[room->GetId()] = room;
     room->SetExit("east", 2);
   }
 
   {
-    std::shared_ptr<Room> room(new Room(2));
+    std::shared_ptr<Room> room(new Room(*this, 2));
     room->SetDescription("The Foyer\n\nThis is an ornate foyer. There is a chandelier overhead. There is a very plain looking room to the west.");
     rooms_[room->GetId()] = room;
     room->SetExit("west", 1);
@@ -67,18 +67,21 @@ void World::PromoteToPlayer(Login& player, const std::string& name) {
   uv_stream_t* conn = player.GetConn();
   std::shared_ptr<Player> loggedIn(new Player(*this, conn, name));
   conns_.insert_or_assign(conn, loggedIn);
+  players_by_name_.insert_or_assign(loggedIn->GetName(), loggedIn);
   loggedIn->Send(tprintf("Welcome to the game, %s!\n", loggedIn->GetName()));
 
-  this->MovePlayerToRoom(*loggedIn, 1);
+  this->TeleportPlayerToRoom(*loggedIn, 1);
 }
 
 void World::Logout(Player& player) {
+  const std::string& name = player.GetName();
   auto client = player.GetConn();
   uv_close((uv_handle_t*)client, NULL);
   conns_.erase(client);
+  players_by_name_.erase(name);
 }
 
-void World::MovePlayerToRoom(Player& player, int room_id) {
+void World::TeleportPlayerToRoom(Player& player, int room_id) {
   auto room = this->GetRoom(room_id);
   if (!room) {
     std::cerr << "Could not move player to room " << room_id <<
@@ -86,11 +89,22 @@ void World::MovePlayerToRoom(Player& player, int room_id) {
     return;
   }
 
-  player.SetCurrentRoom(room_id);
-  // room->AddPlayer(player);
+  auto currentRoom = player.GetCurrentRoom();
+  if (currentRoom) {
+    currentRoom->RemovePlayer(player);
+  }
+
+  player.SetCurrentRoomId(room_id);
+  room->AddPlayer(player);
+}
+
+void World::MovePlayer(Player& player, Room& old_room, Room& new_room, const std::string& direction) {
+  //
 }
 
 std::shared_ptr<Room> World::GetRoom(int room_id) {
+  if (room_id == 0) return nullptr;
+
   auto match = rooms_.find(room_id);
   if (match == rooms_.end()) {
     return nullptr;

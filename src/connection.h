@@ -1,8 +1,7 @@
 #pragma once
 
 #include <uv.h>
-
-class World;
+#include "world.h"
 
 enum class ConnectionType {
   LOGIN,
@@ -20,6 +19,6 @@ class Connection {
     Connection(World& world, uv_stream_t* conn) :
       world_(&world), conn_(conn) {}
 
-    World* world_;
+    std::shared_ptr<World> world_;
     uv_stream_t* conn_;
 };
